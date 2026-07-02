@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,12 +30,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
-//import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pseudostage.dreamremote.ui.theme.DreamRemoteTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+
+
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,17 +49,26 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DreamRemoteTheme {
+                var showHelp by remember { mutableStateOf(false) }
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    if (showHelp) {
+                        DreamRemoteHelp(
+                            modifier = Modifier.padding(innerPadding),
+                            onReturn = { showHelp = false }
+                        )
+                    } else {
+                        DreamRemote(
+                            modifier = Modifier.padding(innerPadding),
+                            onHelp = { showHelp = true }
+                        )
+                    }
                 }
             }
         }
     }
 }
 @Composable
-fun Greeting(modifier: Modifier = Modifier) {
+fun DreamRemote(modifier: Modifier = Modifier, onHelp: () -> Unit = {}) {
     var dreamNum by remember { mutableStateOf(generateDreamTestNum()) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -60,7 +77,7 @@ fun Greeting(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     Column(
         modifier = modifier.fillMaxSize()
-            .fillMaxSize() // Column now takes the whole area the Scaffold gave it
+            .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -78,7 +95,7 @@ fun Greeting(modifier: Modifier = Modifier) {
         Spacer(Modifier.weight(0.5f))
         Text(text = "IF OUTSIDE OF SHARED REALITY", color = Color(0xFF505050))
         Text(text = "PRESS TO DO ANYTHING", color = Color(0xFF313131))
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.weight(0.8f))
         Button(onClick = {
             view.playSoundEffect(SoundEffectConstants.CLICK)
             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -98,24 +115,81 @@ fun Greeting(modifier: Modifier = Modifier) {
                 }
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF808080),   // the button background
-                contentColor = Color(0xEB252525)      // the label/icon color
+                containerColor = Color(0xFF808080),
+                contentColor = Color(0xEB252525)
             )) { Text("NEW TEST") }
         Spacer(Modifier.weight(0.1f))
         Text(text = "IN CASE OF NON-MATCH:", color = Color(0xFF313131))
         Text(text = "OUTSIDE OF SHARED REALITY", color = Color(0xFF505050))
-        Spacer(Modifier.weight(0.1f))
+        Button(
+            onClick = { onHelp() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = Color(0x22505050),
+            ),
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_help_outline_24),
+                contentDescription = "Help",
+            )
+        }
         Text(text = dreamNum)
     }
 }
 
-//@Composable
-//@Preview(showBackground = true)
-//fun GreetingPreview() {
-//    DreamRemoteTheme {
-//        Greeting(Modifier)
-//    }
-//}
+@Composable
+fun DreamRemoteHelp(modifier: Modifier = Modifier, onReturn: () -> Unit = {}) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val haptics = LocalHapticFeedback.current
+    val view = LocalView.current
+    Column(
+        modifier = modifier.fillMaxSize()
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = {
+            view.playSoundEffect(SoundEffectConstants.CLICK)
+            haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
+            interactionSource = interactionSource,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isPressed) Color(0xEBFFC7CA) else Color(0xFFDC143C),
+            )) { Text("        \n       \n       \n") }
+        Text(text = "THE PRINCIPLE OF \nCORRESPONDENCE",
+            color = Color(0xFFDC143C),
+            fontSize = 30.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth())
+        Text(text = "WITHIN THE SHARED REALITY OF WAKING LIFE " +
+                "THE NUMBERS ABOVE AND BELOW THE BUTTON " +
+                "WILL ALWAYS MIRROR ONE ANOTHER ", color = Color(0xFF505050),textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth())
+        Text(text = "IF AN OBSERVER NOTES A DISCREPANCY " +
+                "THEY MUST NOT BE CONSIDERED A CURRENT " +
+                "INHABITANT OF THE SHARED REALITY", color = Color(0xFF313131),textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth())
+        Text(text = "WHETHER WITHIN THE REALMS OF DREAMS " +
+                "OR DELUSIONS THE OBSERVER MUST " +
+                "RECONCILE THE TRUTH FOR THEMSELVES", color = Color(0xFF505050),textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth())
+        Text(text = "THE OBSERVER MUST BECOME ROUTINELY FAMILIAR " +
+                "WITH THE BUTTON WITHIN SHARED REALITY " +
+                "IN ORDER TO BRING IT WITH THEM ACROSS THE BOUNDARIES BETWEEN ", color = Color(0xFF313131),textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth())
+        Button(onClick = {
+            view.playSoundEffect(SoundEffectConstants.CLICK)
+            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+            onReturn()
+        },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF808080),
+                contentColor = Color(0xEB252525)
+            )) { Text("RETURN") }
+        Text(text = " ", color = Color(0xFF505050))
+    }
+}
 fun generateDreamTestNum(): String {
     val random24DigitString = (1..24)
         .map { (0..9).random() }
