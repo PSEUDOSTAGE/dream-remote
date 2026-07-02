@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# IDE config (not for a public repo)
+.idea/
+
+# Build outputs / release artifacts
+*.apk
+/app/release/
