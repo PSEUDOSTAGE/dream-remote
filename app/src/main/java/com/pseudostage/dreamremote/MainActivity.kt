@@ -23,6 +23,7 @@ import android.view.SoundEffectConstants
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -57,27 +58,32 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
-
-
-
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             DreamRemoteTheme {
                 var showHelp by remember { mutableStateOf(false) }
+                var showPleh by remember { mutableStateOf(false) }
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     if (showHelp) {
                         DreamRemoteHelp(
                             modifier = Modifier.padding(innerPadding),
                             onReturn = { showHelp = false }
                         )
-                    } else {
+                    }
+                    else if (showPleh) {
+                        DreamRemotePleh(
+                            modifier = Modifier.padding(innerPadding),
+                            onReturn = { showPleh = false }
+                    )
+                    }else {
                         DreamRemote(
                             modifier = Modifier.padding(innerPadding),
-                            onHelp = { showHelp = true }
+                            onHelp = { showHelp = true },
+                            onPleh = { showPleh = true }
                         )
                     }
                 }
@@ -86,7 +92,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 @Composable
-fun DreamRemote(modifier: Modifier = Modifier, onHelp: () -> Unit = {}) {
+fun DreamRemote(modifier: Modifier = Modifier, onHelp: () -> Unit = {}, onPleh: () -> Unit = {}) {
     var dreamNum by remember { mutableStateOf(generateDreamTestNum()) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -102,6 +108,18 @@ fun DreamRemote(modifier: Modifier = Modifier, onHelp: () -> Unit = {}) {
     ) {
         Spacer(Modifier.weight(0.1f))
         Text(text = dreamNum)
+        Button(
+            onClick = { onPleh() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = Color.Transparent,
+            ),
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_help_outline_24),
+                contentDescription = "Help",
+            )
+        }
         Spacer(Modifier.weight(2f))
         Button(onClick = {
             view.playSoundEffect(SoundEffectConstants.CLICK)
@@ -208,6 +226,53 @@ fun DreamRemoteHelp(modifier: Modifier = Modifier, onReturn: () -> Unit = {}) {
         Text(text = " ", color = Color(0xFF505050))
     }
 }
+
+@Composable
+fun DreamRemotePleh(modifier: Modifier = Modifier, onReturn: () -> Unit = {}) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val haptics = LocalHapticFeedback.current
+    val view = LocalView.current
+    Column(
+        modifier = modifier.fillMaxSize()
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = {
+            view.playSoundEffect(SoundEffectConstants.CLICK)
+            haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
+            interactionSource = interactionSource,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isPressed) Color(0xEBFFC7CA) else Color(0xFFDC143C),
+            )) { Text("        \n       \n       \n") }
+        Text(text = "THE WINDOW TO REQUIRED KNOWLEDGE",
+            color = Color(0xFFDC143C),
+            fontSize = 30.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth())
+        Text(text = "WINDOWS ALLOW INFORMATION TO PASS THROUGH BOUNDARIES, \n ALLOW " +
+                "THIS WINDOW TO SHOW YOU THE SIGHTS AND SOUNDS,\n SYMBOLS AND WORDS, THAT YOU SEEK IN THIS MOMENT ",
+            color = Color(0xFF505050),
+            textAlign = TextAlign.Center,
+            fontSize = 10.sp,
+            lineHeight = 10.sp,
+            modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.weight(0.1f))
+        Button(onClick = {
+            view.playSoundEffect(SoundEffectConstants.CLICK)
+            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+            onReturn()
+        },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF808080),
+                contentColor = Color(0xEB252525)
+            )) { Text("RETURN") }
+        Text(text = " ", color = Color(0xFF505050))
+    }
+}
+
 fun generateDreamTestNum(): String {
     val random24DigitString = (1..24)
         .map { (0..9).random() }

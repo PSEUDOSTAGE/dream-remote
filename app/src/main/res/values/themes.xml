@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.DreamRemote" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.DreamRemote" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/white</item>
+    </style>
+
+    <!-- Splash screen theme. Set the splash color via @color/splash_background. -->
+    <style name="Theme.DreamRemote.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.DreamRemote</item>
+    </style>
 </resources>
